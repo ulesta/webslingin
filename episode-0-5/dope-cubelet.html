@@ -1,0 +1,161 @@
+<html>
+<script type="text/javascript">
+    class Cubelet extends HTMLElement {
+
+        static get observedAttributes() {
+            return ['slots'];
+        }
+
+        get FACE_ANIMATION_DURATION() {
+            return 400;
+        };
+
+        constructor() {
+            super();
+
+            const shadowRoot = this.attachShadow({
+                mode: 'open'
+            });
+
+            this.applyHandlers();
+
+            this.styles = `
+              <style>
+                :host {
+                  display: inline-block;
+                  width: 400px;
+                  height: 400px;
+                  position: relative;
+                }
+
+                .face {
+                  background: pink;
+                  width: 100%;
+                  height: 100%;
+                  color: white;
+                  font-size: 3em;
+                  position: absolute;
+                  transition: all ${this.FACE_ANIMATION_DURATION}ms ease-in-out;
+                  transform-origin: left;
+                  opacity: 0;
+                  transform: translateX(100%) rotateY(90deg);
+                  box-sizing: border-box;
+                  overflow: hidden;
+                  box-shadow: 0px 10px 20px -1px rgba(0,0,0,0.2);
+                }
+
+                .current {
+                  opacity: 1;
+                  transform: translateX(0) rotateY(0deg);
+                }
+
+                .current+.face {
+                  opacity: 1;
+                  transform: translateX(100%) rotateY(90deg) rotateX(-45deg);
+                }
+
+                .face:nth-child(even) {
+                  background: blue;
+                }
+
+                ::slotted(div) {
+                  width: 100%;
+                  height: 100%;
+                  box-sizing: border-box;
+                }
+
+                .animate-out .overlay {
+                  opacity: 0.5;
+                }
+
+                .overlay {
+                  position: absolute;
+                  left: 0;
+                  top: 0;
+                  right: 0;
+                  bottom: 0;
+                  background: black;
+                  transition: opacity ${this.FACE_ANIMATION_DURATION}ms ease-in-out;
+                  opacity: 0;
+                }
+              </style>`;
+        }
+
+        get slots() {
+            return this.hasAttribute('slots') && this.attributes.getNamedItem('slots').value;
+        }
+
+        set slots(val) {
+
+        }
+
+        attributeChangedCallback(attr, oldVal, newVal) {
+            switch (attr) {
+                case 'slots':
+                    this.renderSlots(Number.parseInt(this.slots));
+                    break;
+            };
+        }
+
+        renderSlots(numOfSlots = 1) {
+            // when we get slots="n", we want to repeat slots * n
+            let innerHTML = ``;
+
+            for (let i = 0; i < numOfSlots; i++) {
+                innerHTML += `<div class="face ${ i === 0 ? 'current' : ''}">
+                    <slot name="${i+1}"></slot>
+                    <div class="overlay"></div>
+                </div>`;
+            }
+
+            console.log('🍻 renderSlots()')
+            this.changeShadowContent(innerHTML);
+        }
+
+        changeShadowContent(innerHTML) {
+            this.shadowRoot.innerHTML = `
+                ${this.styles}
+                ${innerHTML}
+            `;
+        }
+
+        applyHandlers() {
+            this.onclick = () => {
+                console.log('Clicked!');
+                this.handleCurrent();
+                this.handleNext();
+            }
+        }
+
+        handleCurrent() {
+            const currFace = this.shadowRoot.querySelector('.current');
+            currFace.classList.toggle('animate-out');
+            currFace.style.transform = 'rotateY(-90deg) rotateX(45deg)';
+            currFace.style.opacity = '0';
+
+
+            const bg = currFace.style.background;
+            window.setTimeout(() => {
+                currFace.classList.toggle('current');
+                currFace.classList.toggle('animate-out');
+                currFace.style.transform = null;
+                currFace.style.opacity = 1;
+                this.shadowRoot.appendChild(currFace);
+                currFace.style.background = bg;
+            }, this.FACE_ANIMATION_DURATION);
+        }
+
+        handleNext() {
+            let nextFace = this.shadowRoot.querySelector('.current+.face');
+
+            nextFace.style.transform = `rotateY(0deg)`;
+            window.setTimeout(() => {
+                nextFace.classList.toggle('current');
+            }, this.FACE_ANIMATION_DURATION);
+        }
+    }
+
+    window.customElements.define('dope-cubelet', Cubelet);
+</script>
+
+</html>
