@@ -7,23 +7,88 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             padding: 0;
             margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        dope-cubelet {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+        }
+        
+        .page {
+            padding: 24px;
+        }
+        
+        .grd1 {
+            background: #e8cbc0;
+            /* fallback for old browsers */
+            background: -webkit-linear-gradient(to right, #e8cbc0, #636fa4);
+            /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to right, #e8cbc0, #636fa4);
+            /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        }
+        
+        .grd2 {
+            background: #c0c0aa;
+            /* fallback for old browsers */
+            background: -webkit-linear-gradient(to right, #1cefff, #c0c0aa);
+            /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to right, #1cefff, #c0c0aa);
+            /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        }
+        
+        .grd3 {
+            background: #DBE6F6;
+            /* fallback for old browsers */
+            background: -webkit-linear-gradient(to right, #C5796D, #DBE6F6);
+            /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to right, #C5796D, #DBE6F6);
+            /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        }
+        
+        .grd4 {
+            background: #3494E6;
+            /* fallback for old browsers */
+            background: -webkit-linear-gradient(to right, #EC6EAD, #3494E6);
+            /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to right, #EC6EAD, #3494E6);
+            /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
         }
     </style>
 </head>
 
 <body>
     <dope-cubelet>
-        <div slot="1">One</div>
-        <div slot="2">Two</div>
-        <div slot="3">Three</div>
-        <div slot="4">Four</div>
+        <div class="page grd1" slot="1">
+            <h1>My Insta Story</h1>
+            <h3>Walking my Dog</h3>
+        </div>
+        <div class="page grd2" slot="2">
+            <h1>Weekend Vibes 🔥</h1>
+            <h3>Sunday Fun Day</h3>
+        </div>
+        <div class="page grd3" slot="3">
+            <h1>Weekend Vibes 🤡</h1>
+            <h3>Sunday Fun Day</h3>
+        </div>
+        <div class="page grd4" slot="4">
+            <h1>Weekend Vibes 😎</h1>
+            <h3>Sunday Fun Day</h3>
+        </div>
     </dope-cubelet>
 
     <script type="text/javascript">
         class Cubelet extends HTMLElement {
 
             get FACE_ANIMATION_DURATION() {
-                return 200;
+                return 400;
             };
 
             constructor() {
@@ -47,27 +112,20 @@
 
             handleCurrent() {
                 const currFace = this.shadowRoot.querySelector('.current');
-                let nextFace = this.shadowRoot.querySelector('.current+.face');
-
-                if (!nextFace) {
-                    return;
-                }
+                currFace.classList.toggle('animate-out');
 
                 const bg = currFace.style.background;
-                currFace.style.background = 'black';
-                currFace.style.transform = `rotateY(-90deg)`;
                 window.setTimeout(() => {
                     currFace.classList.toggle('current');
+                    currFace.classList.toggle('animate-out');
+                    currFace.style.transform = null;
+                    this.shadowRoot.appendChild(currFace);
                     currFace.style.background = bg;
                 }, this.FACE_ANIMATION_DURATION);
             }
 
             handleNext() {
                 let nextFace = this.shadowRoot.querySelector('.current+.face');
-
-                if (!nextFace) {
-                    return;
-                }
 
                 nextFace.style.transform = `rotateY(0deg)`;
                 window.setTimeout(() => {
@@ -87,15 +145,15 @@
 
                       .face {
                         background: pink;
-                        width: 400px;
-                        height: 400px;
+                        width: 100%;
+                        height: 100%;
                         display: inline-flex;
                         justify-content: center;
                         align-items: center;
                         color: white;
                         font-size: 3em;
                         position: absolute;
-                        transition: all ${this.FACE_ANIMATION_DURATION}ms ease-in-out;
+                        transition: all ${this.FACE_ANIMATION_DURATION}ms cubic-bezier(0.42, 0, 0.73, 1.71);
                         transform-origin: left;
                         opacity: 0;
                         transform: translateX(100%) rotateY(90deg);
@@ -114,22 +172,45 @@
                       .face:nth-child(even) {
                         background: blue;
                       }
+
+											::slotted(div) {
+												width: 100%;
+												height: 100%;
+											}
+
+											.animate-out .overlay {
+												opacity: 0.5;
+											}
+
+											.overlay {
+												position: absolute;
+												left: 0;
+												top: 0;
+												right: 0;
+												bottom: 0;
+												background: black;
+												transition: opacity ${this.FACE_ANIMATION_DURATION}ms ease-in-out;
+												opacity: 0;
+											}
                     </style>`;
 
                 const content = `
                     <div class="face current">
-                        <slot name="1">
+                        <slot name="1"></slot>
+												<div class="overlay"></div>
                     </div>
                     <div class="face">
-                        <slot name="2">
+                        <slot name="2"></slot>
+												<div class="overlay"></div>
                     </div>
                     <div class="face">
-                        <slot name="3">
+                        <slot name="3"></slot>
+												<div class="overlay"></div>
                     </div>
                     <div class="face">
-                        <slot name="4">
+                        <slot name="4"></slot>
+												<div class="overlay"></div>
                     </div>`;
-
 
                 shadowRoot.innerHTML = `
                     ${styles}
